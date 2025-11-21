@@ -1,177 +1,205 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JFrame.java to edit this template
+ * The MIT License
+ *
+ * Copyright 2025 Professor Cleber Feitosa.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 package view;
 
-import controller.ModuloConexao;
-import java.awt.Color;
+import controller.UsuarioDAO;
 import java.sql.*;
+import jdbc.ModuloConexao;
+import java.awt.Color;
+import java.awt.HeadlessException;
+import java.awt.Toolkit;
 import javax.swing.JOptionPane;
 
 /**
+ * Autenticação do usuário
  *
- * @author clebe
+ * @author Professor Cleber Feitosa
  */
 public class TelaLogin extends javax.swing.JFrame {
 
-    Connection conexao = null;
-    PreparedStatement ps;
+    Connection conexao;
+    PreparedStatement pst;
     ResultSet rs;
-
+    
+    /**
+     * Creates new form TelaLogin
+     */
     public TelaLogin() {
-        initComponents();
-         
+        initComponents();        
     }
 
-    public void status() {
+    /**
+     * Método responsável por exibir o ícone de status da conexão
+     */
+    private void status() {
         try {
             conexao = ModuloConexao.conectar();
             if (conexao != null) {
-                jLblStatus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/dbok.png")));
+               jLblStatus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icones/dbok.png")));
             } else {
-                jLblStatus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icons/dberror.png")));
+                jLblStatus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icones/dberror.png")));
             }
         } catch (Exception e) {
             JOptionPane.showMessageDialog(null, e);
         } finally {
             try {
                 conexao.close();
-            } catch (Exception e) {
-                JOptionPane.showMessageDialog(null, e);
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, ex);
             }
         }
-
     }
 
-    public void logar(){
-        String sql = "select * from tbusuarios where login = ? and senha = md5(?)";
-        try {
-            conexao = ModuloConexao.conectar();
-            ps = conexao.prepareStatement(sql);
-            ps.setString(1, jTxtUsuario.getText());
-            String captura = new String(jTxtSenha.getPassword());
-            ps.setString(2, captura);
-            rs = ps.executeQuery();
-            if(rs.next()){
-              String perfil = rs.getString(6);
-                if (perfil.equals("Administrador")) {
-                    TelaPrincipal telaprincipal = new TelaPrincipal();
-                    telaprincipal.setVisible(true);
-                    TelaPrincipal.itmMnUsuario.setEnabled(true);
-                    TelaPrincipal.mnRelatorio.setEnabled(true);
-                    TelaPrincipal.jLblUsuario.setText(rs.getString(2));
-                    TelaPrincipal.jLblUsuario.setForeground(Color.blue);
-                    dispose();
-                } else {
-                  TelaPrincipal telaprincipal = new TelaPrincipal();
-                  telaprincipal.setVisible(true);
-                  TelaPrincipal.jLblUsuario.setText(rs.getString(2));
-                  TelaPrincipal.jLblUsuario.setText(rs.getString(2));
-                  dispose();
-                 }
-        } else{
-                JOptionPane.showMessageDialog(null, "Usuário e/ou senha inválido!!!");
-                jTxtUsuario.setText(null);
-                jTxtSenha.setText(null);
-                jTxtUsuario.requestFocus();
-                jBtnEntrar.setVisible(false);
-            }
-        }catch (Exception e) {
-        }
-    }
-    
+    /**
+     * Método responsável pela autenticação e gestão de perfil do usuário
+     */
+//    private void logar() {        
+//        String sql = "select * from tbusuarios where login = ? and senha = md5(?)";
+//        try {
+//            conexao = ModuloConexao.conectar();
+//            pst = conexao.prepareStatement(sql);
+//            pst.setString(1, jTxtUsario.getText());
+//            String captura = new String(jTxtSenha.getPassword());
+//            pst.setString(2, captura);
+//            rs = pst.executeQuery();
+//            if (rs.next()) {
+//                String perfil = rs.getString(6);
+//                if (perfil.equals("admin")) {
+//                    TelaPrincipal principal = new TelaPrincipal();
+//                    principal.setVisible(true);
+//                    TelaPrincipal.menRel.setEnabled(true);
+//                    TelaPrincipal.menCadUsu.setEnabled(true);
+//                    TelaPrincipal.lblUsuario.setText(rs.getString(2));
+//                    TelaPrincipal.lblUsuario.setForeground(Color.red);
+//                    this.dispose();
+//                } else {                    
+//                    TelaPrincipal principal = new TelaPrincipal();
+//                    principal.setVisible(true);
+//                    TelaPrincipal.lblUsuario.setText(rs.getString(2));
+//                    this.dispose();
+//                }
+//            } else {
+//                JOptionPane.showMessageDialog(null, "Usuário e/ou senha inválido(s)");
+//            }
+//        } catch (HeadlessException | SQLException e) {
+//            JOptionPane.showMessageDialog(null, e);
+//        } finally {
+//            try {
+//                conexao.close();
+//            } catch (SQLException ex) {
+//                JOptionPane.showMessageDialog(null, ex);
+//            }
+//        }
+//    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
     @SuppressWarnings("unchecked")
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
-        jTxtUsuario = new javax.swing.JTextField();
+        jTxtUsario = new javax.swing.JTextField();
         jTxtSenha = new javax.swing.JPasswordField();
-        jBtnEntrar = new javax.swing.JButton();
+        jBtnLogin = new javax.swing.JButton();
         jLblStatus = new javax.swing.JLabel();
 
-        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Sistema de OS");
+        setDefaultCloseOperation(javax.swing.WindowConstants.DISPOSE_ON_CLOSE);
+        setTitle("Login");
+        setResizable(false);
         addWindowListener(new java.awt.event.WindowAdapter() {
             public void windowActivated(java.awt.event.WindowEvent evt) {
                 formWindowActivated(evt);
             }
-            public void windowOpened(java.awt.event.WindowEvent evt) {
-                formWindowOpened(evt);
-            }
         });
 
+        jLabel1.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel1.setText("Usuário");
 
+        jLabel2.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
         jLabel2.setText("Senha");
 
-        jTxtUsuario.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                jTxtUsuarioKeyPressed(evt);
-            }
-        });
-
-        jTxtSenha.addKeyListener(new java.awt.event.KeyAdapter() {
-            public void keyPressed(java.awt.event.KeyEvent evt) {
-                jTxtSenhaKeyPressed(evt);
-            }
-        });
-
-        jBtnEntrar.setText("Entrar");
-        jBtnEntrar.setEnabled(false);
-        jBtnEntrar.addActionListener(new java.awt.event.ActionListener() {
+        jBtnLogin.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        jBtnLogin.setMnemonic('e');
+        jBtnLogin.setText("Entrar");
+        jBtnLogin.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jBtnEntrarActionPerformed(evt);
+                jBtnLoginActionPerformed(evt);
             }
         });
-        jBtnEntrar.addKeyListener(new java.awt.event.KeyAdapter() {
+        jBtnLogin.addKeyListener(new java.awt.event.KeyAdapter() {
             public void keyPressed(java.awt.event.KeyEvent evt) {
-                jBtnEntrarKeyPressed(evt);
+                jBtnLoginKeyPressed(evt);
             }
         });
+
+        jLblStatus.setIcon(new javax.swing.ImageIcon(getClass().getResource("/icones/dberror.png"))); // NOI18N
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
-                    .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLblStatus)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addComponent(jBtnEntrar))
+                .addGap(37, 37, 37)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
                             .addComponent(jLabel2)
                             .addComponent(jLabel1))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addComponent(jTxtUsuario)
-                            .addComponent(jTxtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, 168, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(42, Short.MAX_VALUE))
+                            .addComponent(jTxtUsario)
+                            .addComponent(jTxtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, 180, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addComponent(jBtnLogin)
+                    .addGroup(javax.swing.GroupLayout.Alignment.LEADING, layout.createSequentialGroup()
+                        .addGap(8, 8, 8)
+                        .addComponent(jLblStatus)))
+                .addContainerGap(43, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addGap(12, 12, 12)
+                .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel1)
-                    .addComponent(jTxtUsuario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel2)
-                    .addComponent(jTxtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jTxtUsario, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addGap(18, 18, 18)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jBtnEntrar)
+                    .addComponent(jTxtSenha, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel2))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jBtnLogin)
                     .addComponent(jLblStatus))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(62, Short.MAX_VALUE))
         );
 
-        pack();
+        setSize(new java.awt.Dimension(335, 187));
         setLocationRelativeTo(null);
     }// </editor-fold>//GEN-END:initComponents
 
@@ -179,40 +207,49 @@ public class TelaLogin extends javax.swing.JFrame {
         status();
     }//GEN-LAST:event_formWindowActivated
 
-    private void formWindowOpened(java.awt.event.WindowEvent evt) {//GEN-FIRST:event_formWindowOpened
-        jBtnEntrar.setVisible(false);
-    }//GEN-LAST:event_formWindowOpened
-
-    private void jBtnEntrarActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnEntrarActionPerformed
-       if(jTxtUsuario.getText().isEmpty() || jTxtSenha.getText().isEmpty()) {
-           JOptionPane.showMessageDialog(null, "Entre com usário e senha");
-           jTxtUsuario.requestFocus();
-       }else{
-           logar();
-       }
-    }//GEN-LAST:event_jBtnEntrarActionPerformed
-
-    private void jBtnEntrarKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jBtnEntrarKeyPressed
-       if(jTxtUsuario.getText().isEmpty() || jTxtSenha.getText().isEmpty()) {
-           JOptionPane.showMessageDialog(null, "Entre com usário e senha");
-           jTxtUsuario.requestFocus();
-       }else{
-           logar();
-       }
-    }//GEN-LAST:event_jBtnEntrarKeyPressed
-
-    private void jTxtSenhaKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtSenhaKeyPressed
-        if(jTxtSenha.getText().length()>=4){
-            jBtnEntrar.setEnabled(true);
-            //jBtnEntrar.requestFocus();
+    private void jBtnLoginActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jBtnLoginActionPerformed
+        // Botao entrar
+        try {
+            String usario, senha;
+           
+            usario = jTxtUsario.getText();
+            senha = jTxtSenha.getText();
+            
+            UsuarioDAO  dao = new UsuarioDAO();
+            
+            
+            dao.efetuaLogin(usario, senha);
+            
+            
+            this.dispose();
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "erro");
+            
         }
-    }//GEN-LAST:event_jTxtSenhaKeyPressed
+    }//GEN-LAST:event_jBtnLoginActionPerformed
 
-    private void jTxtUsuarioKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jTxtUsuarioKeyPressed
-           if(jTxtUsuario.getText().length()>3){
-           jBtnEntrar.setVisible(true);
-       }
-    }//GEN-LAST:event_jTxtUsuarioKeyPressed
+    private void jBtnLoginKeyPressed(java.awt.event.KeyEvent evt) {//GEN-FIRST:event_jBtnLoginKeyPressed
+       // Botao entrar
+        try {
+            String usario, senha;
+           
+            usario = jTxtUsario.getText();
+            senha = jTxtSenha.getText();
+            
+            UsuarioDAO  dao = new UsuarioDAO();
+            
+            
+            dao.efetuaLogin(usario, senha);
+            
+            
+            this.dispose();
+            
+        } catch (Exception e) {
+            JOptionPane.showMessageDialog(null, "erro");
+            
+        }
+    }//GEN-LAST:event_jBtnLoginKeyPressed
 
     /**
      * @param args the command line arguments
@@ -230,31 +267,26 @@ public class TelaLogin extends javax.swing.JFrame {
                     break;
                 }
             }
-        } catch (ClassNotFoundException ex) {
-            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (InstantiationException ex) {
-            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (IllegalAccessException ex) {
-            java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
-        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
             java.util.logging.Logger.getLogger(TelaLogin.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
         }
         //</editor-fold>
+        //</editor-fold>
+        
+        //</editor-fold>
 
         /* Create and display the form */
-        java.awt.EventQueue.invokeLater(new Runnable() {
-            public void run() {
-                new TelaLogin().setVisible(true);
-            }
+        java.awt.EventQueue.invokeLater(() -> {
+            new TelaLogin().setVisible(true);
         });
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton jBtnEntrar;
+    private javax.swing.JButton jBtnLogin;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLblStatus;
     private javax.swing.JPasswordField jTxtSenha;
-    private javax.swing.JTextField jTxtUsuario;
+    private javax.swing.JTextField jTxtUsario;
     // End of variables declaration//GEN-END:variables
 }

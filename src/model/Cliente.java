@@ -9,21 +9,20 @@ package model;
  * @author clebe
  */
 public class Cliente {
-    
     private int id;
     private String nome;
     private String endereco;
-    private String telefone;
+    private String fone;
     private String email;
+    
+    public Cliente(){
+        
+    };
 
-    public Cliente() {
-    }
-
-    public Cliente(int id,String nome, String endereco, String telefone, String email) {
-        this.id = id;
+    public Cliente(String nome, String endereco, String fone, String email) {
         this.nome = nome;
         this.endereco = endereco;
-        this.telefone = telefone;
+        this.fone = fone;
         this.email = email;
     }
 
@@ -59,14 +58,37 @@ public class Cliente {
         this.endereco = endereco;
     }
 
-    public String getTelefone() {
-        return telefone;
+    public String getFone() {
+        return fone;
     }
 
-    public void setTelefone(String telefone) {
-        this.telefone = telefone;
+    public void setFone(String fone) {
+        this.fone = fone;
     }
 
-   
-      
+    @Override
+    public int hashCode() {
+        int hash = 7;
+        hash = 59 * hash + this.id;
+        return hash;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj) {
+            return true;
+        }
+        if (obj == null) {
+            return false;
+        }
+        if (getClass() != obj.getClass()) {
+            return false;
+        }
+        final Cliente other = (Cliente) obj;
+        return this.id == other.id;
+    }
+    
+    
+    
+    
 }

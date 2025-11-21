@@ -9,20 +9,20 @@ package model;
  * @author clebe
  */
 public class Usuario {
-    
-    private int id;
-    private String nome;
+    private int idUser;
+    private String usuario;
     private String fone;
     private String login;
     private String senha;
     private String perfil;
 
     public Usuario() {
+        
     }
 
-    public Usuario(int id, String nome, String fone, String login, String senha, String perfil) {
-        this.id = id;
-        this.nome = nome;
+    public Usuario(int idUser, String usuario, String fone, String login, String senha, String perfil) {
+        this.idUser = idUser;
+        this.usuario = usuario;
         this.fone = fone;
         this.login = login;
         this.senha = senha;
@@ -37,20 +37,20 @@ public class Usuario {
         this.perfil = perfil;
     }
 
-    public int getId() {
-        return id;
+    public int getIdUser() {
+        return idUser;
     }
 
-    public void setId(int id) {
-        this.id = id;
+    public void setIdUser(int idUser) {
+        this.idUser = idUser;
     }
 
-    public String getNome() {
-        return nome;
+    public String getUsuario() {
+        return usuario;
     }
 
-    public void setNome(String nome) {
-        this.nome = nome;
+    public void setUsuario(String usuario) {
+        this.usuario = usuario;
     }
 
     public String getFone() {
@@ -76,6 +76,13 @@ public class Usuario {
     public void setSenha(String senha) {
         this.senha = senha;
     }
+    
+    
+    
+    
+    
+    
+    
     
     
 }

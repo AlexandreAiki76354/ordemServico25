@@ -4,11 +4,18 @@
  */
 package controller;
 
+import java.awt.Color;
+import java.awt.HeadlessException;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.SQLIntegrityConstraintViolationException;
 import javax.swing.JOptionPane;
+import jdbc.ModuloConexao;
 import model.Usuario;
+import view.TelaLogin;
+import view.TelaPrincipal;
 
 /**
  *
@@ -16,111 +23,171 @@ import model.Usuario;
  */
 public class UsuarioDAO {
 
-    Connection conexao = null;
-    PreparedStatement ps;
-    ResultSet rs;
+    private Connection conexao;
 
-    String consultarUsuario = "select * from tbusuarios where iduser=?";
-    String cadastrarUsuario = "insert into tbusuarios(iduser,usuario,fone,login,senha,perfil) values(?,?,?,?,md5(?),?)";
-    String altararSenha = "update tbusuarios set usuario=?,fone=?,login=?,senha=md5(?),perfil=? where iduser=?";
-    String alterarUsuario = "update tbusuarios set usuario=?,fone=?,login=?,perfil=? where iduser=?";
-    String deletarUsuario = "delete from tbusuarios where iduser=?";
+    public UsuarioDAO() {
+        this.conexao = ModuloConexao.conectar();
+    }
 
-    public Usuario pesquisarUsuario(int id) {
+    //Metodo efetuaLogin
+    public void efetuaLogin(String usuario, String senha) {
+
         try {
-            conexao = ModuloConexao.conectar();
-            ps = conexao.prepareCall(consultarUsuario);
-            ps.setInt(1, id);
-            rs = ps.executeQuery();
-            Usuario obj = new Usuario();
+
+            //1 passo - criar SQL
+            String sql = "select * from tbusuarios where login = ? and senha = ?";
+            PreparedStatement stmt;
+            stmt = conexao.prepareStatement(sql);
+            stmt.setString(1, usuario);
+            stmt.setString(2, senha);
+
+            ResultSet rs = stmt.executeQuery();
+
             if (rs.next()) {
-                obj.setId(rs.getInt("iduser"));
-                obj.setNome(rs.getString("usuario"));
-                obj.setFone(rs.getString("fone"));
-                obj.setLogin(rs.getString("login"));
-                obj.setSenha(rs.getString("senha"));
-                obj.setPerfil(rs.getString("perfil"));
-
+                //Usuario logou
+                String perfil = rs.getString(6);
+                if (perfil.equals("admin")) {
+                    TelaPrincipal tela = new TelaPrincipal();
+                    tela.setVisible(true);
+                    tela.jMnItmUsuario.setEnabled(true);
+                    tela.jMnRelatorio.setEnabled(true);
+                    tela.jLblUsuario.setText(rs.getString(2));
+                    tela.jLblUsuario.setForeground(Color.RED);
+                } else {
+                    TelaPrincipal tela = new TelaPrincipal();
+                    tela.setVisible(true);
+                    tela.jLblUsuario.setText(rs.getString(2));
+                }
+            } else {
+                //Dados incorretos
+                JOptionPane.showMessageDialog(null, "Dados incorretos!");
+                new TelaLogin().setVisible(true);
             }
-            return obj;
 
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Usuário não encontrado!");
-            return null;
+        } catch (SQLException erro) {
+            JOptionPane.showMessageDialog(null, "Erro : " + erro);
         }
 
     }
 
-    public void cadastrarUsuario(Usuario obj) {
+    /**
+     * método responsável por adicionar usuário no banco
+     *
+     * @param obj
+     */
+    public void adicionarUsuario(Usuario obj) {
+
         try {
+            //1 passo - criar o sql
+            String sql = "insert into tbusuarios(iduser, usuario, fone, login, senha, perfil) values(?,?,?,?,md5(?),?)";
+            //2 passo o conectar o banco de dados e organizar o comando sql
             conexao = ModuloConexao.conectar();
-            ps = conexao.prepareStatement(cadastrarUsuario);
-           // String cadastrarUsuario = "insert into tbusuarios(iduser,usuario,fone,login,senha,perfil) values(?,?,?,?,md5(?),?)";
-            ps.setInt(1, obj.getId());
-            ps.setString(2, obj.getNome());
-            ps.setString(3, obj.getFone());
-            ps.setString(4, obj.getLogin());
-            ps.setString(5, obj.getSenha());
-            ps.setString(6, obj.getPerfil());
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setInt(1, obj.getIdUser());
+            stmt.setString(2, obj.getUsuario());
+            stmt.setString(3, obj.getFone());
+            stmt.setString(4, obj.getLogin());
+            stmt.setString(5, obj.getSenha());
+            stmt.setString(6, obj.getPerfil());
 
-            ps.execute();
-            ps.close();
-            JOptionPane.showMessageDialog(null, "Usuário cadastrado com Sucesso!");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Erro: " + e);
+            //3 passo - executar o comando sql
+            stmt.execute();
+            //  System.out.println(stmt);
+            stmt.close();
+            JOptionPane.showMessageDialog(null, "Usuário cadastrado com sucesso!!");
+
+        } catch (SQLIntegrityConstraintViolationException e1) {
+            JOptionPane.showMessageDialog(null, "Login em uso.\nEscolha outro login.");
+
+        } catch (HeadlessException | SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
+        } finally {
+            try {
+                conexao.close();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, ex);
+            }
         }
     }
 
-    public void alterarSenha(Usuario obj) {
-        try {
-            conexao = ModuloConexao.conectar();
-            ps = conexao.prepareStatement(altararSenha);
-
-            ps.setString(1, obj.getNome());
-            ps.setString(2, obj.getFone());
-            ps.setString(3, obj.getLogin());
-            ps.setString(4, obj.getSenha());
-            ps.setString(5, obj.getPerfil());
-            ps.setInt(6, obj.getId());
-
-            ps.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Usuário alterado com Sucesso!");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Erro: " + e);
-        }
-    }
-
+    /**
+     * método responsável por alterar usuário no banco
+     *
+     * @param obj
+     */
     public void alterarUsuario(Usuario obj) {
+
         try {
+            //1 passo - criar o sql
+            String sql = "update tbusuarios set  usuario=?, fone=?, login=?, senha=md5(?), perfil=? where iduser=?";
+            //2 passo o conectar o banco de dados e organizar o comando sql
             conexao = ModuloConexao.conectar();
-            ps = conexao.prepareStatement(alterarUsuario);
+            PreparedStatement stmt = conexao.prepareStatement(sql);
 
-            ps.setString(1, obj.getNome());
-            ps.setString(2, obj.getFone());
-            ps.setString(3, obj.getLogin());
-            ps.setString(4, obj.getPerfil());
-            ps.setInt(5, obj.getId());
+            stmt.setString(1, obj.getUsuario());
+            stmt.setString(2, obj.getFone());
+            stmt.setString(3, obj.getLogin());
+            stmt.setString(4, obj.getSenha());
+            stmt.setString(5, obj.getPerfil());
+            stmt.setInt(6, obj.getIdUser());
 
-            ps.executeUpdate();
-            JOptionPane.showMessageDialog(null, "Usuário alterado com Sucesso!");
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Erro: " + e);
+            //3 passo - executar o comando sql
+            stmt.execute();
+            //  System.out.println(stmt);
+            stmt.close();
+            JOptionPane.showMessageDialog(null, "Usuário alterado com sucesso!!");
+
+        } catch (SQLIntegrityConstraintViolationException e1) {
+            JOptionPane.showMessageDialog(null, "Login em uso.\nEscolha outro login.");
+        } catch (HeadlessException | SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
+        } finally {
+            try {
+                conexao.close();
+            } catch (SQLException ex) {
+                JOptionPane.showMessageDialog(null, ex);
+            }
         }
     }
-    
-    public void deletarUsuario (Usuario obj){
+
+    /**
+     * Método que busca o usuáro pelo ID
+     *
+     * @param idUser do tipo inteiro
+     * @return Objeto Usuario(model)
+     */
+    public Usuario buscarUsuario(int idUser) {
         try {
+            //1 passo - criar o sql
+            String sql = "select * from tbusuarios WHERE iduser = ?;";
+
+            //2 passo o conectar o banco de dados e organizar o comando sql
             conexao = ModuloConexao.conectar();
-            ps = conexao.prepareStatement(deletarUsuario);
-            
-            ps.setInt(1, obj.getId());
-            ps.execute();
-            
-            JOptionPane.showMessageDialog(null, "Usuário Excluído com sucesso!");
-            
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(null, "Erro: "+e);
+            PreparedStatement stmt = conexao.prepareStatement(sql);
+            stmt.setInt(1, idUser);
+
+            //3 passo - executar o comando sql
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                Usuario usuario = new Usuario();
+                usuario.setIdUser(rs.getInt("iduser"));
+                usuario.setUsuario(rs.getString("usuario"));
+                usuario.setFone(rs.getString("fone"));
+                usuario.setLogin(rs.getString("login"));
+                usuario.setSenha(rs.getString("senha"));
+                usuario.setPerfil(rs.getString("perfil"));
+
+                return usuario;
+
+            } else {
+                JOptionPane.showMessageDialog(null, "Usuário não encontrado!!");
+            }
+            stmt.close();
+        } catch (SQLException e) {
+            JOptionPane.showMessageDialog(null, e);
         }
-    }   
+        return null;
+    }
 
 }
